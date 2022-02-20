@@ -16,7 +16,8 @@ CREATE TABLE CLIENTE (
     NOME              VARCHAR(20)                 NOT NULL,
     SOBRENOME         VARCHAR(50)                 NOT NULL,
     CPF               VARCHAR(13)                 NOT NULL,
-    ATIVO             INT                         NOT NULL
+    ATIVO             INT                         NOT NULL,
+    UNIQUE (CPF)
 );
 
 --TIPOCONTA
@@ -51,7 +52,8 @@ CREATE TABLE CONTA (
     STATUS            INT                       NOT NULL,
     FOREIGN KEY (CODIGO_CLIENTE)    REFERENCES CLIENTE(CODIGO),                
     FOREIGN KEY (NUMERO_AGENCIA)    REFERENCES AGENCIA(NUMERO),
-    FOREIGN KEY (CODIGO_TIPOCONTA)  REFERENCES TIPOCONTA(CODIGO)
+    FOREIGN KEY (CODIGO_TIPOCONTA)  REFERENCES TIPOCONTA(CODIGO),
+    UNIQUE(CODIGO_CLIENTE, NUMERO_AGENCIA, CODIGO_TIPOCONTA)
 );
 
 
