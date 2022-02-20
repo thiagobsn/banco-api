@@ -23,8 +23,16 @@ public class TransacaoService {
 	private TransacaoRepository transacaoRepository;
 	
 	
-	public void salvarTransacaoTipoDeposito(Conta conta, Agencia agencia, BigDecimal valor) {
+	public void salvarTransacaoDeposito(Conta conta, Agencia agencia, BigDecimal valor) {
 		salvarTransacao(buildTipoOperacaoCredito(), buildTipoTransacaoDeposito(), conta, agencia, valor);
+	}
+	
+	public void salvarTransacaoTranferenciaCredito(Conta conta, Agencia agencia, BigDecimal valor) {
+		salvarTransacao(buildTipoOperacaoCredito(), buildTipoTransacaoDeposito(), conta, agencia, valor);
+	}
+	
+	public void salvarTransacaoTranferenciaDebito(Conta conta, Agencia agencia, BigDecimal valor) {
+		salvarTransacao(buildTipoOperacaoDebito(), buildTipoTransacaoDeposito(), conta, agencia, valor);
 	}
 	
 	private void salvarTransacao(TipoOperacao tipoOperacao, TipoTransacao tipoTransacao, Conta conta, Agencia agencia, BigDecimal valor) {
@@ -51,9 +59,9 @@ public class TransacaoService {
 		return buildTipoOperacao(TipoOperacaoEnum.CREDITO);
 	}
 	
-//	private TipoOperacao buildTipoOperacaoDebito() {
-//		return buildTipoOperacao(TipoOperacaoEnum.DEBITO);
-//	}
+	private TipoOperacao buildTipoOperacaoDebito() {
+		return buildTipoOperacao(TipoOperacaoEnum.DEBITO);
+	}
 	
 	private TipoOperacao buildTipoOperacao(TipoOperacaoEnum tipo) {
 		return TipoOperacao.builder()

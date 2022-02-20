@@ -15,6 +15,7 @@ import com.thiagobsn.banco.domain.conta.dto.AberturaContaDTO;
 import com.thiagobsn.banco.domain.conta.dto.ContaDTO;
 import com.thiagobsn.banco.domain.conta.dto.DepositoContaDTO;
 import com.thiagobsn.banco.domain.conta.service.ContaService;
+import com.thiagobsn.banco.domain.transferencia.dto.TransferenciaEntreContasDTO;
 
 @RestController
 @RequestMapping("/api/contas")
@@ -36,6 +37,13 @@ public class ContaController {
 	@PostMapping(value = "/depositar")
 	public ResponseEntity<Boolean> depositar(@RequestBody DepositoContaDTO deposito) {
 		contaService.depositar(deposito);
+		return new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
+	}
+	
+	
+	@PostMapping(value = "/transferir")
+	public ResponseEntity<Boolean> traferir(@RequestBody TransferenciaEntreContasDTO transferencia) {
+		contaService.traferir(transferencia);
 		return new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
 	}
 

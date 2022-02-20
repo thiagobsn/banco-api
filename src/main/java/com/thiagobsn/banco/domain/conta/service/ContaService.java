@@ -22,6 +22,8 @@ import com.thiagobsn.banco.domain.conta.model.Conta;
 import com.thiagobsn.banco.domain.conta.repository.ContaRepository;
 import com.thiagobsn.banco.domain.tipoconta.model.TipoConta;
 import com.thiagobsn.banco.domain.transacao.service.TransacaoService;
+import com.thiagobsn.banco.domain.transferencia.dto.TransferenciaEntreContasDTO;
+import com.thiagobsn.banco.domain.transferencia.service.TransferenciaService;
 import com.thiagobsn.banco.enums.ContaStausEnum;
 
 @Service
@@ -38,6 +40,9 @@ public class ContaService {
 	
 	@Autowired
 	private TransacaoService transacaoService;
+	
+	@Autowired
+	private TransferenciaService transferenciaService;
 	
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public ContaDTO novaConta(AberturaContaDTO aberturaContaDTO) {
@@ -72,14 +77,50 @@ public class ContaService {
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public void depositar(DepositoContaDTO depositoContaDTO) {
 		
-		Conta conta = contaRepository.findByNumeroAndAgenciaNumeroAndTipoContaCodigo(depositoContaDTO.getNumeroConta(), depositoContaDTO.getNumeroAgencia(), depositoContaDTO.getCodigoTipoConta());
+		Conta conta = buscarConta(depositoContaDTO.getNumeroConta(), depositoContaDTO.getNumeroAgencia(), depositoContaDTO.getCodigoTipoConta());
 		
 		BigDecimal saldoAtual = conta.getSaldo();
 		BigDecimal novoSaldo = saldoAtual.add(depositoContaDTO.getValor());
 		conta.setSaldo(novoSaldo);
-		contaRepository.save(conta);
+		salvar(conta);
 		
-		transacaoService.salvarTransacaoTipoDeposito(conta, conta.getAgencia(), depositoContaDTO.getValor());
+		transacaoService.salvarTransacaoDeposito(conta, conta.getAgencia(), depositoContaDTO.getValor());
 	}
 
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+	public void traferir(TransferenciaEntreContasDTO transferencia) {
+		Conta contaOrigem = buscarConta(transferencia.getContaOrigem(), transferencia.getAgenciaOrigem(), transferencia.getTipoContaOrigem());
+		Conta contaDestino = buscarConta(transferencia.getContaDestino(), transferencia.getAgenciaDestino(), transferencia.getTipoContaDestino());
+		
+		if(contaOrigem != null && contaDestino != null) {
+			
+			BigDecimal saldoContaOrigem = contaOrigem.getSaldo();
+			BigDecimal valorTransferencia = transferencia.getValor();
+			
+			if(valorTransferencia.compareTo(saldoContaOrigem) <= 0) {
+				contaOrigem.setSaldo(saldoContaOrigem.subtract(valorTransferencia));
+				contaDestino.setSaldo(contaDestino.getSaldo().add(valorTransferencia));
+				
+				salvar(contaOrigem);
+				salvar(contaDestino);
+				
+				transacaoService.salvarTransacaoTranferenciaDebito(contaOrigem, contaOrigem.getAgencia(), valorTransferencia);
+				transacaoService.salvarTransacaoTranferenciaCredito(contaDestino, contaDestino.getAgencia(), valorTransferencia);
+				
+				transferenciaService.salvarTranferenciaManual(transferencia);
+				
+			}
+		}
+		
+	}
+	
+	private void salvar(Conta conta) {
+		contaRepository.save(conta);
+	}
+	
+	
+	private Conta buscarConta(Long numeroConta , Long numeroAgencia, Long codigoTipoConta) {
+		return contaRepository.findByNumeroAndAgenciaNumeroAndTipoContaCodigo(numeroConta, numeroAgencia, codigoTipoConta);
+	}
+	
 }
