@@ -7,6 +7,7 @@ import com.thiagobsn.banco.domain.conta.model.Conta;
 
 @Repository
 public interface ContaRepository extends JpaRepository<Conta, Long> {
-
+	
+	public Conta findByNumeroAndAgenciaNumeroAndTipoContaCodigo(Long numeroConta , Long numeroAgencia, Long codigoTipoConta);
 	
 }
