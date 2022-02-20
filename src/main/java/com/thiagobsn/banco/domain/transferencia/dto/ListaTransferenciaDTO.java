@@ -1,6 +1,7 @@
 package com.thiagobsn.banco.domain.transferencia.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,7 +11,9 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @AllArgsConstructor @NoArgsConstructor
-public class TransferenciaEntreContasDTO {
+public class ListaTransferenciaDTO {
+	
+	private Long codigo;
 	
 	private Long contaOrigem;
 	private Long agenciaOrigem;
@@ -22,4 +25,6 @@ public class TransferenciaEntreContasDTO {
 	
 	private BigDecimal valor;
 	
+	private LocalDate data;
+
 }

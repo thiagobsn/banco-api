@@ -11,6 +11,6 @@ public enum TransacaoStausEnum {
 	EFETIVADA(1),
 	FUTURA(3);
 	
-	private int status;
+	private Integer status;
 
 }

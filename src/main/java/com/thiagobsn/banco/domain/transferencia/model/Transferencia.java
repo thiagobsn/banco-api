@@ -64,6 +64,6 @@ public class Transferencia {
 	
 	private LocalDate data;
 	
-	private int status;
+	private Integer status;
 
 }

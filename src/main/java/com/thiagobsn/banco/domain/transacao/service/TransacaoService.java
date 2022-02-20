@@ -28,11 +28,19 @@ public class TransacaoService {
 	}
 	
 	public void salvarTransacaoTranferenciaCredito(Conta conta, Agencia agencia, BigDecimal valor) {
-		salvarTransacao(buildTipoOperacaoCredito(), buildTipoTransacaoDeposito(), conta, agencia, valor);
+		salvarTransacao(buildTipoOperacaoCredito(), buildTipoTransacaoTranferencia(), conta, agencia, valor);
 	}
 	
 	public void salvarTransacaoTranferenciaDebito(Conta conta, Agencia agencia, BigDecimal valor) {
-		salvarTransacao(buildTipoOperacaoDebito(), buildTipoTransacaoDeposito(), conta, agencia, valor);
+		salvarTransacao(buildTipoOperacaoDebito(), buildTipoTransacaoTranferencia(), conta, agencia, valor);
+	}
+	
+	public void salvarTransacaoEstornoCredito(Conta conta, Agencia agencia, BigDecimal valor) {
+		salvarTransacao(buildTipoOperacaoCredito(), buildTipoTransacaoEstorno(), conta, agencia, valor);
+	}
+	
+	public void salvarTransacaoEstornoDebito(Conta conta, Agencia agencia, BigDecimal valor) {
+		salvarTransacao(buildTipoOperacaoDebito(), buildTipoTransacaoEstorno(), conta, agencia, valor);
 	}
 	
 	private void salvarTransacao(TipoOperacao tipoOperacao, TipoTransacao tipoTransacao, Conta conta, Agencia agencia, BigDecimal valor) {
@@ -70,8 +78,20 @@ public class TransacaoService {
 	}
 	
 	private TipoTransacao buildTipoTransacaoDeposito() {
+		return buildTipoTransacao(TipoTransacaoEnum.DEPOSITO);
+	}
+	
+	private TipoTransacao buildTipoTransacaoTranferencia() {
+		return buildTipoTransacao(TipoTransacaoEnum.TRANFERENCIA);
+	}
+	
+	private TipoTransacao buildTipoTransacaoEstorno() {
+		return buildTipoTransacao(TipoTransacaoEnum.ESTORNO);
+	}
+	
+	private TipoTransacao buildTipoTransacao(TipoTransacaoEnum tipoTransacaoEnum) {
 		return TipoTransacao.builder()
-		.codigo(TipoTransacaoEnum.DEPOSITO.getCodigo())
+		.codigo(tipoTransacaoEnum.getCodigo())
 		.build();
 	}
 	

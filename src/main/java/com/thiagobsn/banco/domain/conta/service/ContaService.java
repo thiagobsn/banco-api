@@ -22,9 +22,12 @@ import com.thiagobsn.banco.domain.conta.model.Conta;
 import com.thiagobsn.banco.domain.conta.repository.ContaRepository;
 import com.thiagobsn.banco.domain.tipoconta.model.TipoConta;
 import com.thiagobsn.banco.domain.transacao.service.TransacaoService;
+import com.thiagobsn.banco.domain.transferencia.dto.ReverterTransferenciaDTO;
 import com.thiagobsn.banco.domain.transferencia.dto.TransferenciaEntreContasDTO;
+import com.thiagobsn.banco.domain.transferencia.model.Transferencia;
 import com.thiagobsn.banco.domain.transferencia.service.TransferenciaService;
 import com.thiagobsn.banco.enums.ContaStausEnum;
+import com.thiagobsn.banco.enums.TransferenciaStatusEnum;
 
 @Service
 public class ContaService {
@@ -88,14 +91,14 @@ public class ContaService {
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-	public void traferir(TransferenciaEntreContasDTO transferencia) {
-		Conta contaOrigem = buscarConta(transferencia.getContaOrigem(), transferencia.getAgenciaOrigem(), transferencia.getTipoContaOrigem());
-		Conta contaDestino = buscarConta(transferencia.getContaDestino(), transferencia.getAgenciaDestino(), transferencia.getTipoContaDestino());
+	public void traferir(TransferenciaEntreContasDTO transferenciaDTO) {
+		Conta contaOrigem = buscarConta(transferenciaDTO.getContaOrigem(), transferenciaDTO.getAgenciaOrigem(), transferenciaDTO.getTipoContaOrigem());
+		Conta contaDestino = buscarConta(transferenciaDTO.getContaDestino(), transferenciaDTO.getAgenciaDestino(), transferenciaDTO.getTipoContaDestino());
 		
 		if(contaOrigem != null && contaDestino != null) {
 			
 			BigDecimal saldoContaOrigem = contaOrigem.getSaldo();
-			BigDecimal valorTransferencia = transferencia.getValor();
+			BigDecimal valorTransferencia = transferenciaDTO.getValor();
 			
 			if(valorTransferencia.compareTo(saldoContaOrigem) <= 0) {
 				contaOrigem.setSaldo(saldoContaOrigem.subtract(valorTransferencia));
@@ -107,20 +110,52 @@ public class ContaService {
 				transacaoService.salvarTransacaoTranferenciaDebito(contaOrigem, contaOrigem.getAgencia(), valorTransferencia);
 				transacaoService.salvarTransacaoTranferenciaCredito(contaDestino, contaDestino.getAgencia(), valorTransferencia);
 				
-				transferenciaService.salvarTranferenciaManual(transferencia);
+				transferenciaService.salvarTranferenciaManual(contaOrigem, contaDestino, valorTransferencia);
 				
 			}
 		}
 		
 	}
 	
-	private void salvar(Conta conta) {
-		contaRepository.save(conta);
+	private Conta salvar(Conta conta) {
+		return contaRepository.save(conta);
 	}
-	
 	
 	private Conta buscarConta(Long numeroConta , Long numeroAgencia, Long codigoTipoConta) {
 		return contaRepository.findByNumeroAndAgenciaNumeroAndTipoContaCodigo(numeroConta, numeroAgencia, codigoTipoConta);
 	}
+
+	public void reverterTransferencia(Long codigoTipoConta, Long numeroAgencia, Long numeroConta, ReverterTransferenciaDTO reverterTransferenciaDTO) {
+		Transferencia transferencia = transferenciaService.buscarPorCodigo(reverterTransferenciaDTO.getCodigo());
+		if(isRevertTraferenciaValido(codigoTipoConta, numeroAgencia, numeroConta, transferencia)) {
+			
+			Conta contaOrigem = buscarConta(transferencia.getContaOrigem().getNumero(), transferencia.getContaOrigem().getAgencia().getNumero(), transferencia.getContaOrigem().getTipoConta().getCodigo());
+			Conta contaDestino = buscarConta(transferencia.getContaDestino().getNumero(), transferencia.getContaDestino().getAgencia().getNumero(), transferencia.getContaDestino().getTipoConta().getCodigo());
+			
+			if(contaOrigem != null && contaDestino != null) {
+				
+				BigDecimal valorTransferencia = transferencia.getValor();
+				
+				contaDestino.setSaldo(contaDestino.getSaldo().subtract(valorTransferencia));
+				contaOrigem.setSaldo(contaOrigem.getSaldo().add(valorTransferencia));
+				
+				salvar(contaDestino);
+				salvar(contaOrigem);
+				
+				transacaoService.salvarTransacaoEstornoCredito(contaOrigem, contaOrigem.getAgencia(), valorTransferencia);
+				transacaoService.salvarTransacaoEstornoDebito(contaDestino, contaDestino.getAgencia(), valorTransferencia);
+				
+				transferencia.setStatus(TransferenciaStatusEnum.ESTORNADA.getStatus());
+				transferenciaService.salvar(transferencia);
+			}
+		}
+	}
 	
+	private boolean isRevertTraferenciaValido(Long codigoTipoConta, Long numeroAgencia, Long numeroConta, Transferencia transferencia) {
+		Conta contaOrigem = transferencia.getContaOrigem();
+		return transferencia != null && TransferenciaStatusEnum.EFETIVADA.getStatus().equals(transferencia.getStatus()) && 
+				( 	codigoTipoConta.equals(contaOrigem.getNumero()) && 
+					numeroAgencia.equals(contaOrigem.getAgencia().getNumero()) && 
+					codigoTipoConta.equals(contaOrigem.getTipoConta().getCodigo()) );
+	}
 }

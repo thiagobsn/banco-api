@@ -11,6 +11,6 @@ public enum ContaStausEnum {
 	ATIVA(1),
 	BLOQUEADA(3);
 	
-	private int status;
+	private Integer status;
 
 }

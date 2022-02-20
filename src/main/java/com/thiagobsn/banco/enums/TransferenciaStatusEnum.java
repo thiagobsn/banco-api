@@ -5,13 +5,12 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum TipoTransacaoEnum {
+public enum TransferenciaStatusEnum {
 	
-	SAQUE(1L),
-	DEPOSITO(2L),
-	TRANFERENCIA(3L),
-	ESTORNO(4L);
+	NAO_FETIVADA(0),
+	EFETIVADA(1),
+	ESTORNADA(3);
 	
-	private Long codigo;
+	private Integer status;
 
 }
