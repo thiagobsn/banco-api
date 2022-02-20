@@ -114,7 +114,7 @@ INSERT INTO TIPOOPERACAO (CODIGO, DESCRICAO, ATIVO) VALUES ('D','Débito', 1);
 CREATE TABLE TRANSACAO (
     CODIGO                  BIGINT AUTO_INCREMENT   PRIMARY KEY,
     CODIGO_TIPOTRANSACAO    BIGINT                  NOT NULL,
-    CODIGO_TIPOOPERACAO     BIGINT                  NOT NULL,
+    CODIGO_TIPOOPERACAO     VARCHAR(1)              NOT NULL,
     NUMERO_CONTA            BIGINT                  NOT NULL,
     NUMERO_AGENCIA          BIGINT                  NOT NULL,
     VALOR                   NUMERIC(20, 2)          NOT NULL,
