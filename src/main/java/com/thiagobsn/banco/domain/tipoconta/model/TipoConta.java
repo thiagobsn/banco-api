@@ -15,7 +15,6 @@ import lombok.Data;
 public class TipoConta {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long codigo;
 	
 	@Column(length = 30)

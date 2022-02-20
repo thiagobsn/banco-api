@@ -20,7 +20,6 @@ import lombok.NoArgsConstructor;
 public class TipoTransacao {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long codigo;
 	
 	@Column(length = 30)

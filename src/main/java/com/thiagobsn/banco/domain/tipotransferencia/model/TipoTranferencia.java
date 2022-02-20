@@ -15,7 +15,6 @@ import lombok.Data;
 public class TipoTranferencia {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long codigo;
 	
 	@Column(length = 30)
