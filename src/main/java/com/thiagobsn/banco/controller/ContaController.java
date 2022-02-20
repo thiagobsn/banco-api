@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.thiagobsn.banco.domain.conta.dto.AberturaContaDTO;
 import com.thiagobsn.banco.domain.conta.dto.ContaDTO;
+import com.thiagobsn.banco.domain.conta.dto.DepositoContaDTO;
 import com.thiagobsn.banco.domain.conta.service.ContaService;
 
 @RestController
@@ -30,6 +31,12 @@ public class ContaController {
 	@GetMapping(value = "/")
 	public ResponseEntity<List<ContaDTO>> listarTodos() {
 		return new ResponseEntity<>(contaService.listarTodos(), HttpStatus.OK);
+	}
+	
+	@PostMapping(value = "/depositar")
+	public ResponseEntity<Boolean> depositar(@RequestBody DepositoContaDTO deposito) {
+		contaService.depositar(deposito);
+		return new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
 	}
 
 }
