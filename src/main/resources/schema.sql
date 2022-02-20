@@ -42,12 +42,14 @@ INSERT INTO AGENCIA (NOME, ATIVO) VALUES ('Ag Fortaleza', 1);
 --CONTA
 CREATE TABLE CONTA (
     NUMERO            BIGINT AUTO_INCREMENT     PRIMARY KEY,
+    CODIGO_CLIENTE    BIGINT                    NOT NULL,
     NUMERO_AGENCIA    BIGINT                    NOT NULL,
     CODIGO_TIPOCONTA  BIGINT                    NOT NULL,
     SALDO             NUMERIC(20, 2)            NOT NULL,
     ABERTURA          TIMESTAMP                 NOT NULL,
     ENCERRAMENTO      TIMESTAMP,
-    STATUS            INT                       NOT NULL,                
+    STATUS            INT                       NOT NULL,
+    FOREIGN KEY (CODIGO_CLIENTE)    REFERENCES CLIENTE(CODIGO),                
     FOREIGN KEY (NUMERO_AGENCIA)    REFERENCES AGENCIA(NUMERO),
     FOREIGN KEY (CODIGO_TIPOCONTA)  REFERENCES TIPOCONTA(CODIGO)
 );
