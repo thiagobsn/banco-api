@@ -15,6 +15,7 @@ import com.thiagobsn.banco.domain.agencia.model.Agencia;
 import com.thiagobsn.banco.domain.conta.model.Conta;
 import com.thiagobsn.banco.domain.tipoconta.model.TipoConta;
 import com.thiagobsn.banco.domain.tipotransferencia.model.TipoTransferencia;
+import com.thiagobsn.banco.enums.TransferenciaStatusEnum;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -64,6 +65,6 @@ public class Transferencia {
 	
 	private LocalDate data;
 	
-	private Integer status;
+	private TransferenciaStatusEnum status;
 
 }

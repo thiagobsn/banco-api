@@ -43,7 +43,7 @@ public class TransferenciaService {
 	
 	public List<ListaTransferenciaDTO> listarTraferenciaPor(Long codigoTipoConta, Long numeroAgencia, Long numeroConta){
 		
-		List<Transferencia> lista = transferenciaRepository.findAllByContaOrigemNumeroAndAgenciaOrigemNumeroAndTipoContaOrigemCodigoAndStatus(codigoTipoConta, numeroAgencia, numeroConta, TransferenciaStatusEnum.EFETIVADA.getStatus());
+		List<Transferencia> lista = transferenciaRepository.findAllByContaOrigemNumeroAndAgenciaOrigemNumeroAndTipoContaOrigemCodigoAndStatus(codigoTipoConta, numeroAgencia, numeroConta, TransferenciaStatusEnum.EFETIVADA);
 		
 		return lista.stream().map(tranf ->
 			ListaTransferenciaDTO.builder()
@@ -71,7 +71,7 @@ public class TransferenciaService {
 				.tipoContaDestino(contaDestino.getTipoConta())
 				.valor(valor)
 				.data(LocalDate.now())
-				.status(TransferenciaStatusEnum.EFETIVADA.getStatus())
+				.status(TransferenciaStatusEnum.EFETIVADA)
 				.build();
 	}
 

@@ -23,6 +23,4 @@ public class TipoTransferencia {
 	@Column(length = 30)
 	private String nome;
 	
-	boolean ativo;
-
 }

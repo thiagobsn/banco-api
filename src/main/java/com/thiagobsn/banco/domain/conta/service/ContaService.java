@@ -26,7 +26,6 @@ import com.thiagobsn.banco.domain.transferencia.dto.ReverterTransferenciaDTO;
 import com.thiagobsn.banco.domain.transferencia.dto.TransferenciaEntreContasDTO;
 import com.thiagobsn.banco.domain.transferencia.model.Transferencia;
 import com.thiagobsn.banco.domain.transferencia.service.TransferenciaService;
-import com.thiagobsn.banco.enums.ContaStausEnum;
 import com.thiagobsn.banco.enums.TransferenciaStatusEnum;
 
 @Service
@@ -62,7 +61,6 @@ public class ContaService {
 				.agencia(agencia)
 				.tipoConta(tipoConta)
 				.saldo(BigDecimal.ZERO)
-				.status(ContaStausEnum.ATIVA)
 				.build();
 		
 		
@@ -145,7 +143,7 @@ public class ContaService {
 				transacaoService.salvarTransacaoEstornoCredito(contaOrigem, contaOrigem.getAgencia(), valorTransferencia);
 				transacaoService.salvarTransacaoEstornoDebito(contaDestino, contaDestino.getAgencia(), valorTransferencia);
 				
-				transferencia.setStatus(TransferenciaStatusEnum.ESTORNADA.getStatus());
+				transferencia.setStatus(TransferenciaStatusEnum.ESTORNADA);
 				transferenciaService.salvar(transferencia);
 			}
 		}
@@ -153,7 +151,7 @@ public class ContaService {
 	
 	private boolean isRevertTraferenciaValido(Long codigoTipoConta, Long numeroAgencia, Long numeroConta, Transferencia transferencia) {
 		Conta contaOrigem = transferencia.getContaOrigem();
-		return transferencia != null && TransferenciaStatusEnum.EFETIVADA.getStatus().equals(transferencia.getStatus()) && 
+		return transferencia != null && TransferenciaStatusEnum.EFETIVADA.equals(transferencia.getStatus()) && 
 				( 	codigoTipoConta.equals(contaOrigem.getNumero()) && 
 					numeroAgencia.equals(contaOrigem.getAgencia().getNumero()) && 
 					codigoTipoConta.equals(contaOrigem.getTipoConta().getCodigo()) );

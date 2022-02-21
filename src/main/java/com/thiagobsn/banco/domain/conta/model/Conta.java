@@ -14,7 +14,6 @@ import javax.persistence.Table;
 import com.thiagobsn.banco.domain.agencia.model.Agencia;
 import com.thiagobsn.banco.domain.cliente.model.Cliente;
 import com.thiagobsn.banco.domain.tipoconta.model.TipoConta;
-import com.thiagobsn.banco.enums.ContaStausEnum;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -49,7 +48,5 @@ public class Conta {
 	private LocalDate abertura;
 	
 	private LocalDate encerramento;
-	
-	private ContaStausEnum status;
 	
 }

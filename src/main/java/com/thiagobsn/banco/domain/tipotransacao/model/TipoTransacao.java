@@ -23,6 +23,4 @@ public class TipoTransacao {
 	@Column(length = 30)
 	private String descricao;
 	
-	boolean ativo;
-
 }

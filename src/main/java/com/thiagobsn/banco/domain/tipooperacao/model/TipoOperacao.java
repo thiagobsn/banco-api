@@ -24,6 +24,4 @@ public class TipoOperacao {
 	@Column(length = 30)
 	private String descricao;
 	
-	boolean ativo;
-
 }

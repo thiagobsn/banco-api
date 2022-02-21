@@ -21,12 +21,7 @@ public class Cliente {
 	@Column(length = 20)
 	private String nome;
 	
-	@Column(length = 50)
-	private String sobrenome;
-	
 	@Column(length = 13)
 	private String cpf;
-	
-	boolean ativo;
 	
 }
