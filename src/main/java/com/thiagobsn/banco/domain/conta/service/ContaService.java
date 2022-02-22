@@ -18,21 +18,29 @@ import com.thiagobsn.banco.domain.cliente.service.ClienteService;
 import com.thiagobsn.banco.domain.conta.dto.AberturaContaDTO;
 import com.thiagobsn.banco.domain.conta.dto.ContaDTO;
 import com.thiagobsn.banco.domain.conta.dto.DepositoContaDTO;
+import com.thiagobsn.banco.domain.conta.dto.FiltroContaDTO;
 import com.thiagobsn.banco.domain.conta.model.Conta;
 import com.thiagobsn.banco.domain.conta.repository.ContaRepository;
+import com.thiagobsn.banco.domain.conta.util.ContaAdapter;
 import com.thiagobsn.banco.domain.tipoconta.model.TipoConta;
 import com.thiagobsn.banco.domain.transacao.service.TransacaoService;
 import com.thiagobsn.banco.domain.transferencia.dto.ReverterTransferenciaDTO;
 import com.thiagobsn.banco.domain.transferencia.dto.TransferenciaEntreContasDTO;
 import com.thiagobsn.banco.domain.transferencia.model.Transferencia;
 import com.thiagobsn.banco.domain.transferencia.service.TransferenciaService;
+import com.thiagobsn.banco.enums.TipoOperacaoEnum;
 import com.thiagobsn.banco.enums.TransferenciaStatusEnum;
+import com.thiagobsn.banco.exception.ContaInvalidaException;
+import com.thiagobsn.banco.exception.SaldoInsuficienteException;
 
 @Service
 public class ContaService {
 	
 	@Autowired
 	private ModelMapper modelMapper;
+	
+	@Autowired
+	private ContaAdapter contaAdapter;
 	
 	@Autowired
 	private ClienteService clienteService;
@@ -45,6 +53,9 @@ public class ContaService {
 	
 	@Autowired
 	private TransferenciaService transferenciaService;
+	
+	private static final TipoOperacaoEnum TIPO_OPERACAO_CREDITO = TipoOperacaoEnum.CREDITO;
+	private static final TipoOperacaoEnum TIPO_OPERACAO_DEBITO = TipoOperacaoEnum.DEBITO;
 	
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public ContaDTO novaConta(AberturaContaDTO aberturaContaDTO) {
@@ -76,9 +87,10 @@ public class ContaService {
 	}
 	
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-	public void depositar(DepositoContaDTO depositoContaDTO) {
+	public void depositar(DepositoContaDTO depositoContaDTO) throws ContaInvalidaException {
 		
-		Conta conta = buscarConta(depositoContaDTO.getNumeroConta(), depositoContaDTO.getNumeroAgencia(), depositoContaDTO.getCodigoTipoConta());
+		Conta conta = buscarConta(contaAdapter.toFiltroContaDTO(depositoContaDTO));
+		isContaValida(conta);
 		
 		BigDecimal saldoAtual = conta.getSaldo();
 		BigDecimal novoSaldo = saldoAtual.add(depositoContaDTO.getValor());
@@ -89,48 +101,44 @@ public class ContaService {
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-	public void traferir(TransferenciaEntreContasDTO transferenciaDTO) {
-		Conta contaOrigem = buscarConta(transferenciaDTO.getContaOrigem(), transferenciaDTO.getAgenciaOrigem(), transferenciaDTO.getTipoContaOrigem());
-		Conta contaDestino = buscarConta(transferenciaDTO.getContaDestino(), transferenciaDTO.getAgenciaDestino(), transferenciaDTO.getTipoContaDestino());
+	public void traferir(TransferenciaEntreContasDTO transferenciaDTO) throws SaldoInsuficienteException, ContaInvalidaException {
 		
-		if(contaOrigem != null && contaDestino != null) {
+		Conta contaOrigem = buscarConta(contaAdapter.toFiltroContaDTO(transferenciaDTO.getContaOrigem(), transferenciaDTO.getAgenciaOrigem(), transferenciaDTO.getTipoContaOrigem()));
+		Conta contaDestino = buscarConta(contaAdapter.toFiltroContaDTO(transferenciaDTO.getContaDestino(), transferenciaDTO.getAgenciaDestino(), transferenciaDTO.getTipoContaDestino()));
+		
+		if(isContaValida(contaOrigem) && isContaValida(contaDestino)) {
 			
 			BigDecimal saldoContaOrigem = contaOrigem.getSaldo();
 			BigDecimal valorTransferencia = transferenciaDTO.getValor();
 			
-			if(valorTransferencia.compareTo(saldoContaOrigem) <= 0) {
-				contaOrigem.setSaldo(saldoContaOrigem.subtract(valorTransferencia));
-				contaDestino.setSaldo(contaDestino.getSaldo().add(valorTransferencia));
-				
-				salvar(contaOrigem);
-				salvar(contaDestino);
-				
-				transacaoService.salvarTransacaoTranferenciaDebito(contaOrigem, contaOrigem.getAgencia(), valorTransferencia);
-				transacaoService.salvarTransacaoTranferenciaCredito(contaDestino, contaDestino.getAgencia(), valorTransferencia);
-				
-				transferenciaService.salvarTranferenciaManual(contaOrigem, contaDestino, valorTransferencia);
-				
+			if(valorTransferencia.compareTo(saldoContaOrigem) > 0) {
+				throw new SaldoInsuficienteException("Saldo insuficiente!");
 			}
+			
+			contaOrigem.setSaldo(saldoContaOrigem.subtract(valorTransferencia));
+			contaDestino.setSaldo(contaDestino.getSaldo().add(valorTransferencia));
+			
+			salvar(contaOrigem);
+			salvar(contaDestino);
+			
+			salvarTransacaoTranferencia(TIPO_OPERACAO_DEBITO, contaOrigem, valorTransferencia);
+			salvarTransacaoTranferencia(TIPO_OPERACAO_CREDITO, contaDestino, valorTransferencia);
+			
+			transferenciaService.salvarTranferenciaManual(contaOrigem, contaDestino, valorTransferencia);
 		}
 		
 	}
 	
-	private Conta salvar(Conta conta) {
-		return contaRepository.save(conta);
-	}
-	
-	private Conta buscarConta(Long numeroConta , Long numeroAgencia, Long codigoTipoConta) {
-		return contaRepository.findByNumeroAndAgenciaNumeroAndTipoContaCodigo(numeroConta, numeroAgencia, codigoTipoConta);
-	}
-
-	public void reverterTransferencia(Long codigoTipoConta, Long numeroAgencia, Long numeroConta, ReverterTransferenciaDTO reverterTransferenciaDTO) {
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+	public void reverterTransferencia(Long codigoTipoConta, Long numeroAgencia, Long numeroConta, ReverterTransferenciaDTO reverterTransferenciaDTO) throws ContaInvalidaException {
 		Transferencia transferencia = transferenciaService.buscarPorCodigo(reverterTransferenciaDTO.getCodigo());
 		if(isRevertTraferenciaValido(codigoTipoConta, numeroAgencia, numeroConta, transferencia)) {
 			
-			Conta contaOrigem = buscarConta(transferencia.getContaOrigem().getNumero(), transferencia.getContaOrigem().getAgencia().getNumero(), transferencia.getContaOrigem().getTipoConta().getCodigo());
-			Conta contaDestino = buscarConta(transferencia.getContaDestino().getNumero(), transferencia.getContaDestino().getAgencia().getNumero(), transferencia.getContaDestino().getTipoConta().getCodigo());
 			
-			if(contaOrigem != null && contaDestino != null) {
+			Conta contaOrigem = buscarConta(contaAdapter.toFiltroContaDTO(transferencia.getContaOrigem()));
+			Conta contaDestino = buscarConta(contaAdapter.toFiltroContaDTO(transferencia.getContaDestino()));
+			
+			if(isContaValida(contaOrigem) && isContaValida(contaDestino)) {
 				
 				BigDecimal valorTransferencia = transferencia.getValor();
 				
@@ -140,8 +148,8 @@ public class ContaService {
 				salvar(contaDestino);
 				salvar(contaOrigem);
 				
-				transacaoService.salvarTransacaoEstornoCredito(contaOrigem, contaOrigem.getAgencia(), valorTransferencia);
-				transacaoService.salvarTransacaoEstornoDebito(contaDestino, contaDestino.getAgencia(), valorTransferencia);
+				salvarTransacaoEstorno(TIPO_OPERACAO_CREDITO, contaOrigem, valorTransferencia);
+				salvarTransacaoEstorno(TIPO_OPERACAO_DEBITO, contaDestino, valorTransferencia);
 				
 				transferencia.setStatus(TransferenciaStatusEnum.ESTORNADA);
 				transferenciaService.salvar(transferencia);
@@ -156,4 +164,28 @@ public class ContaService {
 					numeroAgencia.equals(contaOrigem.getAgencia().getNumero()) && 
 					codigoTipoConta.equals(contaOrigem.getTipoConta().getCodigo()) );
 	}
+	
+	private void salvarTransacaoEstorno(TipoOperacaoEnum tipoOperacao, Conta conta, BigDecimal valor) {
+		transacaoService.salvarTransacaoEstorno(tipoOperacao, conta, conta.getAgencia(), valor);
+	}
+	
+	public void salvarTransacaoTranferencia(TipoOperacaoEnum tipoOperacao, Conta conta, BigDecimal valor) {
+		transacaoService.salvarTransacaoTranferencia(tipoOperacao, conta, conta.getAgencia(), valor);
+	}
+	
+	private Conta salvar(Conta conta) {
+		return contaRepository.save(conta);
+	}
+	
+	private Conta buscarConta(FiltroContaDTO filtroDTO) {
+		return contaRepository.findByNumeroAndAgenciaNumeroAndTipoContaCodigo(filtroDTO.getNumeroConta(), filtroDTO.getNumeroAgencia(), filtroDTO.getCodigoTipoConta());
+	}
+	
+	private boolean isContaValida(Conta conta) throws ContaInvalidaException {
+		if(conta != null && conta.getNumero() != null && conta.getAgencia() != null && conta.getTipoConta() != null) {
+			return true;
+		}
+		throw new ContaInvalidaException("Conta inválida!");
+	}
+	
 }

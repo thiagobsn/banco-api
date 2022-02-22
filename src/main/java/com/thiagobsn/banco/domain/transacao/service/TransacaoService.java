@@ -22,25 +22,16 @@ public class TransacaoService {
 	@Autowired
 	private TransacaoRepository transacaoRepository;
 	
-	
 	public void salvarTransacaoDeposito(Conta conta, Agencia agencia, BigDecimal valor) {
-		salvarTransacao(buildTipoOperacaoCredito(), buildTipoTransacaoDeposito(), conta, agencia, valor);
+		salvarTransacao(buildTipoOperacao(TipoOperacaoEnum.CREDITO), buildTipoTransacao(TipoTransacaoEnum.DEPOSITO), conta, agencia, valor);
 	}
 	
-	public void salvarTransacaoTranferenciaCredito(Conta conta, Agencia agencia, BigDecimal valor) {
-		salvarTransacao(buildTipoOperacaoCredito(), buildTipoTransacaoTranferencia(), conta, agencia, valor);
+	public void salvarTransacaoTranferencia(TipoOperacaoEnum tipoOperacao, Conta conta, Agencia agencia, BigDecimal valor) {
+		salvarTransacao(buildTipoOperacao(tipoOperacao), buildTipoTransacao(TipoTransacaoEnum.TRANFERENCIA), conta, agencia, valor);
 	}
 	
-	public void salvarTransacaoTranferenciaDebito(Conta conta, Agencia agencia, BigDecimal valor) {
-		salvarTransacao(buildTipoOperacaoDebito(), buildTipoTransacaoTranferencia(), conta, agencia, valor);
-	}
-	
-	public void salvarTransacaoEstornoCredito(Conta conta, Agencia agencia, BigDecimal valor) {
-		salvarTransacao(buildTipoOperacaoCredito(), buildTipoTransacaoEstorno(), conta, agencia, valor);
-	}
-	
-	public void salvarTransacaoEstornoDebito(Conta conta, Agencia agencia, BigDecimal valor) {
-		salvarTransacao(buildTipoOperacaoDebito(), buildTipoTransacaoEstorno(), conta, agencia, valor);
+	public void salvarTransacaoEstorno(TipoOperacaoEnum tipoOperacao,Conta conta, Agencia agencia, BigDecimal valor) {
+		salvarTransacao(buildTipoOperacao(tipoOperacao), buildTipoTransacao(TipoTransacaoEnum.ESTORNO), conta, agencia, valor);
 	}
 	
 	private void salvarTransacao(TipoOperacao tipoOperacao, TipoTransacao tipoTransacao, Conta conta, Agencia agencia, BigDecimal valor) {
@@ -58,17 +49,8 @@ public class TransacaoService {
 		salvar(transacao);
 	}
 	
-	
 	private Transacao salvar(Transacao transacao) {
 		return transacaoRepository.save(transacao);
-	}
-	
-	private TipoOperacao buildTipoOperacaoCredito() {
-		return buildTipoOperacao(TipoOperacaoEnum.CREDITO);
-	}
-	
-	private TipoOperacao buildTipoOperacaoDebito() {
-		return buildTipoOperacao(TipoOperacaoEnum.DEBITO);
 	}
 	
 	private TipoOperacao buildTipoOperacao(TipoOperacaoEnum tipo) {
@@ -77,23 +59,10 @@ public class TransacaoService {
 				.build();
 	}
 	
-	private TipoTransacao buildTipoTransacaoDeposito() {
-		return buildTipoTransacao(TipoTransacaoEnum.DEPOSITO);
-	}
-	
-	private TipoTransacao buildTipoTransacaoTranferencia() {
-		return buildTipoTransacao(TipoTransacaoEnum.TRANFERENCIA);
-	}
-	
-	private TipoTransacao buildTipoTransacaoEstorno() {
-		return buildTipoTransacao(TipoTransacaoEnum.ESTORNO);
-	}
-	
 	private TipoTransacao buildTipoTransacao(TipoTransacaoEnum tipoTransacaoEnum) {
 		return TipoTransacao.builder()
 		.codigo(tipoTransacaoEnum.getCodigo())
 		.build();
 	}
-	
 	
 }

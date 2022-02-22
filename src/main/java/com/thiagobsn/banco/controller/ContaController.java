@@ -20,6 +20,8 @@ import com.thiagobsn.banco.domain.transferencia.dto.ListaTransferenciaDTO;
 import com.thiagobsn.banco.domain.transferencia.dto.ReverterTransferenciaDTO;
 import com.thiagobsn.banco.domain.transferencia.dto.TransferenciaEntreContasDTO;
 import com.thiagobsn.banco.domain.transferencia.service.TransferenciaService;
+import com.thiagobsn.banco.exception.ContaInvalidaException;
+import com.thiagobsn.banco.exception.SaldoInsuficienteException;
 
 @RestController
 @RequestMapping("/api/contas")
@@ -42,13 +44,13 @@ public class ContaController {
 	}
 	
 	@PostMapping(value = "/depositar")
-	public ResponseEntity<Boolean> depositar(@RequestBody DepositoContaDTO deposito) {
+	public ResponseEntity<Boolean> depositar(@RequestBody DepositoContaDTO deposito) throws ContaInvalidaException {
 		contaService.depositar(deposito);
 		return new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
 	}
 	
 	@PostMapping(value = "/transferir")
-	public ResponseEntity<Boolean> traferir(@RequestBody TransferenciaEntreContasDTO transferencia) {
+	public ResponseEntity<Boolean> traferir(@RequestBody TransferenciaEntreContasDTO transferencia) throws SaldoInsuficienteException, ContaInvalidaException {
 		contaService.traferir(transferencia);
 		return new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
 	}
@@ -59,7 +61,7 @@ public class ContaController {
 	}
 	
 	@PostMapping(value = "/{codigoTipoConta}/{numeroAgencia}/{numeroConta}/transferencias/reverter")
-	public ResponseEntity<Boolean> reverterTrafereancia(@PathVariable Long codigoTipoConta, @PathVariable Long numeroAgencia, @PathVariable Long numeroConta, @RequestBody ReverterTransferenciaDTO reverterTransferenciaDTO) {
+	public ResponseEntity<Boolean> reverterTrafereancia(@PathVariable Long codigoTipoConta, @PathVariable Long numeroAgencia, @PathVariable Long numeroConta, @RequestBody ReverterTransferenciaDTO reverterTransferenciaDTO) throws ContaInvalidaException {
 		contaService.reverterTransferencia(codigoTipoConta, numeroAgencia, numeroConta, reverterTransferenciaDTO);
 		return new ResponseEntity<>(true, HttpStatus.OK);
 	}
