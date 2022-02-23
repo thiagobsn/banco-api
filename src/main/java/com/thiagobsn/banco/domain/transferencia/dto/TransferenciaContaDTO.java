@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @AllArgsConstructor @NoArgsConstructor
-public class TransferenciaEntreContasDTO {
+public class TransferenciaContaDTO {
 	
 	private Long contaOrigem;
 	private Long agenciaOrigem;

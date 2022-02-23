@@ -25,11 +25,12 @@ import com.thiagobsn.banco.domain.conta.util.ContaAdapter;
 import com.thiagobsn.banco.domain.tipoconta.model.TipoConta;
 import com.thiagobsn.banco.domain.transacao.service.TransacaoService;
 import com.thiagobsn.banco.domain.transferencia.dto.ReverterTransferenciaDTO;
-import com.thiagobsn.banco.domain.transferencia.dto.TransferenciaEntreContasDTO;
+import com.thiagobsn.banco.domain.transferencia.dto.TransferenciaContaDTO;
 import com.thiagobsn.banco.domain.transferencia.model.Transferencia;
 import com.thiagobsn.banco.domain.transferencia.service.TransferenciaService;
 import com.thiagobsn.banco.enums.TipoOperacaoEnum;
 import com.thiagobsn.banco.enums.TransferenciaStatusEnum;
+import com.thiagobsn.banco.exception.BancoApiException;
 import com.thiagobsn.banco.exception.ContaInvalidaException;
 import com.thiagobsn.banco.exception.SaldoInsuficienteException;
 
@@ -90,7 +91,7 @@ public class ContaService {
 	public void depositar(DepositoContaDTO depositoContaDTO) throws ContaInvalidaException {
 		
 		Conta conta = buscarConta(contaAdapter.toFiltroContaDTO(depositoContaDTO));
-		isContaValida(conta);
+		validarConta(conta);
 		
 		BigDecimal saldoAtual = conta.getSaldo();
 		BigDecimal novoSaldo = saldoAtual.add(depositoContaDTO.getValor());
@@ -101,12 +102,12 @@ public class ContaService {
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-	public void traferir(TransferenciaEntreContasDTO transferenciaDTO) throws SaldoInsuficienteException, ContaInvalidaException {
+	public void traferir(TransferenciaContaDTO transferenciaDTO) throws SaldoInsuficienteException, ContaInvalidaException, BancoApiException {
 		
 		Conta contaOrigem = buscarConta(contaAdapter.toFiltroContaDTO(transferenciaDTO.getContaOrigem(), transferenciaDTO.getAgenciaOrigem(), transferenciaDTO.getTipoContaOrigem()));
 		Conta contaDestino = buscarConta(contaAdapter.toFiltroContaDTO(transferenciaDTO.getContaDestino(), transferenciaDTO.getAgenciaDestino(), transferenciaDTO.getTipoContaDestino()));
 		
-		if(isContaValida(contaOrigem) && isContaValida(contaDestino)) {
+		if(validarDadosTransferencia(contaOrigem, contaDestino, transferenciaDTO.getValor())) {
 			
 			BigDecimal saldoContaOrigem = contaOrigem.getSaldo();
 			BigDecimal valorTransferencia = transferenciaDTO.getValor();
@@ -131,14 +132,15 @@ public class ContaService {
 	
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public void reverterTransferencia(Long codigoTipoConta, Long numeroAgencia, Long numeroConta, ReverterTransferenciaDTO reverterTransferenciaDTO) throws ContaInvalidaException {
+		
 		Transferencia transferencia = transferenciaService.buscarPorCodigo(reverterTransferenciaDTO.getCodigo());
+		
 		if(isRevertTraferenciaValido(codigoTipoConta, numeroAgencia, numeroConta, transferencia)) {
-			
 			
 			Conta contaOrigem = buscarConta(contaAdapter.toFiltroContaDTO(transferencia.getContaOrigem()));
 			Conta contaDestino = buscarConta(contaAdapter.toFiltroContaDTO(transferencia.getContaDestino()));
 			
-			if(isContaValida(contaOrigem) && isContaValida(contaDestino)) {
+			if(validarConta(contaOrigem) && validarConta(contaDestino)) {
 				
 				BigDecimal valorTransferencia = transferencia.getValor();
 				
@@ -177,15 +179,31 @@ public class ContaService {
 		return contaRepository.save(conta);
 	}
 	
-	private Conta buscarConta(FiltroContaDTO filtroDTO) {
+	public Conta buscarConta(FiltroContaDTO filtroDTO) {
 		return contaRepository.findByNumeroAndAgenciaNumeroAndTipoContaCodigo(filtroDTO.getNumeroConta(), filtroDTO.getNumeroAgencia(), filtroDTO.getCodigoTipoConta());
 	}
 	
-	private boolean isContaValida(Conta conta) throws ContaInvalidaException {
+	public boolean validarConta(Conta conta) throws ContaInvalidaException {
 		if(conta != null && conta.getNumero() != null && conta.getAgencia() != null && conta.getTipoConta() != null) {
 			return true;
 		}
 		throw new ContaInvalidaException("Conta inválida!");
+	}
+	
+	private boolean validarDadosTransferencia(Conta contaOrigem, Conta contaDestino, BigDecimal valor) throws BancoApiException, ContaInvalidaException {
+	
+		validarConta(contaOrigem);
+		validarConta(contaDestino);
+		
+		if(contaOrigem.equals(contaDestino)) {
+			throw new BancoApiException("Operação não permitida!");
+		}
+		
+		if(valor.compareTo(BigDecimal.ZERO) < 1) {
+			throw new BancoApiException("Valor inválido!");
+		}
+		
+		return true;
 	}
 	
 }

@@ -1,5 +1,6 @@
 package com.thiagobsn.banco.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +19,12 @@ import com.thiagobsn.banco.domain.conta.dto.DepositoContaDTO;
 import com.thiagobsn.banco.domain.conta.service.ContaService;
 import com.thiagobsn.banco.domain.transferencia.dto.ListaTransferenciaDTO;
 import com.thiagobsn.banco.domain.transferencia.dto.ReverterTransferenciaDTO;
-import com.thiagobsn.banco.domain.transferencia.dto.TransferenciaEntreContasDTO;
+import com.thiagobsn.banco.domain.transferencia.dto.AgendadaDTO;
+import com.thiagobsn.banco.domain.transferencia.dto.TransferenciaContaDTO;
 import com.thiagobsn.banco.domain.transferencia.service.TransferenciaService;
+import com.thiagobsn.banco.domain.transferenciaagendada.dto.TransferenciaAgendadaDTO;
+import com.thiagobsn.banco.domain.transferenciaagendada.service.TransferenciaAgendadaService;
+import com.thiagobsn.banco.exception.BancoApiException;
 import com.thiagobsn.banco.exception.ContaInvalidaException;
 import com.thiagobsn.banco.exception.SaldoInsuficienteException;
 
@@ -32,6 +37,9 @@ public class ContaController {
 	
 	@Autowired
 	private TransferenciaService transferenciaService;
+	
+	@Autowired
+	private TransferenciaAgendadaService transferenciaAgendadaService;
 	
 	@PostMapping(value = "/")
 	public ResponseEntity<ContaDTO> salvarNovoConta(@RequestBody AberturaContaDTO conta) {
@@ -50,7 +58,7 @@ public class ContaController {
 	}
 	
 	@PostMapping(value = "/transferir")
-	public ResponseEntity<Boolean> traferir(@RequestBody TransferenciaEntreContasDTO transferencia) throws SaldoInsuficienteException, ContaInvalidaException {
+	public ResponseEntity<Boolean> traferir(@RequestBody TransferenciaContaDTO transferencia) throws SaldoInsuficienteException, ContaInvalidaException, BancoApiException {
 		contaService.traferir(transferencia);
 		return new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
 	}
@@ -61,9 +69,25 @@ public class ContaController {
 	}
 	
 	@PostMapping(value = "/{codigoTipoConta}/{numeroAgencia}/{numeroConta}/transferencias/reverter")
-	public ResponseEntity<Boolean> reverterTrafereancia(@PathVariable Long codigoTipoConta, @PathVariable Long numeroAgencia, @PathVariable Long numeroConta, @RequestBody ReverterTransferenciaDTO reverterTransferenciaDTO) throws ContaInvalidaException {
+	public ResponseEntity<Boolean> reverterTrafereancia(@PathVariable Long codigoTipoConta, 
+			@PathVariable Long numeroAgencia, 
+			@PathVariable Long numeroConta, 
+			@RequestBody ReverterTransferenciaDTO reverterTransferenciaDTO) throws ContaInvalidaException {
 		contaService.reverterTransferencia(codigoTipoConta, numeroAgencia, numeroConta, reverterTransferenciaDTO);
 		return new ResponseEntity<>(true, HttpStatus.OK);
+	}
+	
+	@PostMapping(value = "/{codigoTipoConta}/{numeroAgencia}/{numeroConta}/transferencias/agendar")
+	public ResponseEntity< List<LocalDate>> agendarTrafereancia(@PathVariable Long codigoTipoConta, 
+			@PathVariable Long numeroAgencia, 
+			@PathVariable Long numeroConta, 
+			@RequestBody AgendadaDTO transferenciaAgendadaDTO) throws Exception {
+		return new ResponseEntity<>(transferenciaAgendadaService.agendar(codigoTipoConta, numeroAgencia, numeroConta, transferenciaAgendadaDTO), HttpStatus.OK);
+	}
+	
+	@GetMapping(value = "/transferencias/agendamentos")
+	public ResponseEntity<List<TransferenciaAgendadaDTO>> agendamentos() throws Exception {
+		return new ResponseEntity<>(transferenciaAgendadaService.listarTodos(), HttpStatus.OK);
 	}
 
 }

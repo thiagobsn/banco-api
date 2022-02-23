@@ -18,6 +18,7 @@ import com.thiagobsn.banco.domain.tipoconta.model.TipoConta;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
@@ -25,6 +26,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "CONTA")
 @Builder
 @AllArgsConstructor @NoArgsConstructor
+@EqualsAndHashCode(exclude = {"saldo", "abertura", "encerramento"})
 public class Conta {
 	
 	@Id
