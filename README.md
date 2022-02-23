@@ -20,16 +20,27 @@ O projeto deve permitir as seguintes operações:
 
 # Aplicação
 
+- Aplicação desenvolvida com spring boot com spring data JPA
+
 - **java.version:** 8
 - **context-Path:** /banco
 - **port:** 8080
 
    
-- Imagem docker: **docker run -p 8080:8080 thiagobsn/banco-api**
+- Imagem docker: `		docker run -p 8080:8080 thiagobsn/banco-api`
 
    
 - O arquivo **banco-api.postman_collection.json** contém a colletion com os endpoints criados. 
 - Link Collection Postman: <https://www.getpostman.com/collections/d437742c72f974f0fc27>
+
+
+- Executar local:`	mvn clean install spring-boot:run`
+
+
+
+
+
+
 
 
 
