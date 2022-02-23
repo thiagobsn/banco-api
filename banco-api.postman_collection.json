@@ -1,0 +1,258 @@
+{
+	"info": {
+		"_postman_id": "48707c70-4343-4b16-b210-27af39107665",
+		"name": "banco-api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Conta - criar nova conta",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"cliente\" : {\r\n                    \"nome\" : \"Thiago\",\r\n                    \"sobrenome\" : \"Bernardo\",\r\n                    \"cpf\": \"01367610389\"\r\n                },\r\n    \"agencia\" : {\r\n        \"numero\" : 1\r\n    },\r\n    \"tipoConta\" : {\r\n        \"codigo\" : 1\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/banco/api/contas/",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"banco",
+						"api",
+						"contas",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Conta - depositar",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"numeroConta\": 1,\r\n    \"numeroAgencia\": 1,\r\n    \"codigoTipoConta\": 1,\r\n    \"valor\": \"100.00\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/banco/api/contas/depositar",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"banco",
+						"api",
+						"contas",
+						"depositar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Conta - listar todas as contas",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/banco/api/contas/",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"banco",
+						"api",
+						"contas",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Conta - transferir",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"contaOrigem\": 1,\r\n\t\"agenciaOrigem\": 1,\r\n\t\"tipoContaOrigem\": 1,\r\n\t\r\n\t\"contaDestino\": 2,\r\n\t\"agenciaDestino\": 1,\r\n\t\"tipoContaDestino\": 1,\r\n\r\n    \"valor\": 2000.00\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/banco/api/contas/transferir",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"banco",
+						"api",
+						"contas",
+						"transferir"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Conta - listar transferencias",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/banco/api/contas/1/1/1/transferencias",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"banco",
+						"api",
+						"contas",
+						"1",
+						"1",
+						"1",
+						"transferencias"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Conta - reverter uma transferencia",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"codigoTransferencia\" : 2\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/banco/api/contas/1/1/1/transferencias/reverter",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"banco",
+						"api",
+						"contas",
+						"1",
+						"1",
+						"1",
+						"transferencias",
+						"reverter"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Conta - agenda transferencia",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"contaDestino\": 2,\r\n\t\"agenciaDestino\": 1,\r\n\t\"tipoContaDestino\": 1,\r\n\r\n    \"valor\": \"500.00\",\r\n\r\n    \"data\" : \"2022-02-23\",\r\n\r\n    \"numeroRepeticoes\" : 3\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/banco/api/contas/1/1/1/transferencias/agendar",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"banco",
+						"api",
+						"contas",
+						"1",
+						"1",
+						"1",
+						"transferencias",
+						"agendar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Conta - listar agendamentos",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/banco/api/contas/transferencias/agendamentos",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"banco",
+						"api",
+						"contas",
+						"transferencias",
+						"agendamentos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Conta - saldo",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/banco/api/contas/1/1/2/saldo",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"banco",
+						"api",
+						"contas",
+						"1",
+						"1",
+						"2",
+						"saldo"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
