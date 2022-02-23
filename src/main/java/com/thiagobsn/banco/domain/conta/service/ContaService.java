@@ -58,6 +58,12 @@ public class ContaService {
 	private static final TipoOperacaoEnum TIPO_OPERACAO_CREDITO = TipoOperacaoEnum.CREDITO;
 	private static final TipoOperacaoEnum TIPO_OPERACAO_DEBITO = TipoOperacaoEnum.DEBITO;
 	
+	public BigDecimal saldo(Long codigoTipoConta, Long numeroAgencia, Long numeroConta) throws ContaInvalidaException {
+		Conta conta = buscarConta(contaAdapter.toFiltroContaDTO(numeroConta, numeroAgencia, codigoTipoConta));
+		validarConta(conta);
+		return conta.getSaldo();
+	}
+	
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public ContaDTO novaConta(AberturaContaDTO aberturaContaDTO) {
 		
@@ -74,7 +80,6 @@ public class ContaService {
 				.tipoConta(tipoConta)
 				.saldo(BigDecimal.ZERO)
 				.build();
-		
 		
 		novaConta = contaRepository.save(novaConta);
 		

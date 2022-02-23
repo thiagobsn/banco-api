@@ -1,5 +1,6 @@
 package com.thiagobsn.banco.controller;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -61,6 +62,11 @@ public class ContaController {
 	public ResponseEntity<Boolean> traferir(@RequestBody TransferenciaContaDTO transferencia) throws SaldoInsuficienteException, ContaInvalidaException, BancoApiException {
 		contaService.traferir(transferencia);
 		return new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
+	}
+	
+	@GetMapping(value = "/{codigoTipoConta}/{numeroAgencia}/{numeroConta}/saldo")
+	public ResponseEntity<BigDecimal> saldo(@PathVariable Long codigoTipoConta, @PathVariable Long numeroAgencia, @PathVariable Long numeroConta) throws ContaInvalidaException {
+		return new ResponseEntity<>(contaService.saldo(codigoTipoConta, numeroAgencia, numeroConta), HttpStatus.OK);
 	}
 	
 	@GetMapping(value = "/{codigoTipoConta}/{numeroAgencia}/{numeroConta}/transferencias")
