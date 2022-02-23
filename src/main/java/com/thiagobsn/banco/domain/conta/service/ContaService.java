@@ -88,10 +88,11 @@ public class ContaService {
 	}
 	
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-	public void depositar(DepositoContaDTO depositoContaDTO) throws ContaInvalidaException {
+	public void depositar(DepositoContaDTO depositoContaDTO) throws ContaInvalidaException, BancoApiException {
 		
 		Conta conta = buscarConta(contaAdapter.toFiltroContaDTO(depositoContaDTO));
 		validarConta(conta);
+		valorValido(depositoContaDTO.getValor());
 		
 		BigDecimal saldoAtual = conta.getSaldo();
 		BigDecimal novoSaldo = saldoAtual.add(depositoContaDTO.getValor());
@@ -133,7 +134,7 @@ public class ContaService {
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public void reverterTransferencia(Long codigoTipoConta, Long numeroAgencia, Long numeroConta, ReverterTransferenciaDTO reverterTransferenciaDTO) throws ContaInvalidaException {
 		
-		Transferencia transferencia = transferenciaService.buscarPorCodigo(reverterTransferenciaDTO.getCodigo());
+		Transferencia transferencia = transferenciaService.buscarPorCodigo(reverterTransferenciaDTO.getCodigoTransferencia());
 		
 		if(isRevertTraferenciaValido(codigoTipoConta, numeroAgencia, numeroConta, transferencia)) {
 			
@@ -199,10 +200,15 @@ public class ContaService {
 			throw new BancoApiException("Operação não permitida!");
 		}
 		
+		valorValido(valor);
+		
+		return true;
+	}
+	
+	private boolean valorValido( BigDecimal valor) throws BancoApiException {
 		if(valor.compareTo(BigDecimal.ZERO) < 1) {
 			throw new BancoApiException("Valor inválido!");
 		}
-		
 		return true;
 	}
 	

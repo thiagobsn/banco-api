@@ -17,9 +17,9 @@ import com.thiagobsn.banco.domain.conta.dto.AberturaContaDTO;
 import com.thiagobsn.banco.domain.conta.dto.ContaDTO;
 import com.thiagobsn.banco.domain.conta.dto.DepositoContaDTO;
 import com.thiagobsn.banco.domain.conta.service.ContaService;
+import com.thiagobsn.banco.domain.transferencia.dto.AgendadaDTO;
 import com.thiagobsn.banco.domain.transferencia.dto.ListaTransferenciaDTO;
 import com.thiagobsn.banco.domain.transferencia.dto.ReverterTransferenciaDTO;
-import com.thiagobsn.banco.domain.transferencia.dto.AgendadaDTO;
 import com.thiagobsn.banco.domain.transferencia.dto.TransferenciaContaDTO;
 import com.thiagobsn.banco.domain.transferencia.service.TransferenciaService;
 import com.thiagobsn.banco.domain.transferenciaagendada.dto.TransferenciaAgendadaDTO;
@@ -52,7 +52,7 @@ public class ContaController {
 	}
 	
 	@PostMapping(value = "/depositar")
-	public ResponseEntity<Boolean> depositar(@RequestBody DepositoContaDTO deposito) throws ContaInvalidaException {
+	public ResponseEntity<Boolean> depositar(@RequestBody DepositoContaDTO deposito) throws ContaInvalidaException, BancoApiException {
 		contaService.depositar(deposito);
 		return new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
 	}

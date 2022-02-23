@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class ReverterTransferenciaDTO {
 	
-	private Long codigo;
+	private Long codigoTransferencia;
 
 }
